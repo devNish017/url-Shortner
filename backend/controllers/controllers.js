@@ -20,13 +20,13 @@ const shortenUrl=async(req,res)=>{
      const existing= await url.findOne({originalUrl})
    if(existing){
     return res.json({
-        shortUrl:`http://localhost:2000/${existing.shortUrl}`
+        shortUrl:`https://url-shortner-4r1c.onrender.com/${existing.shortUrl}`
     })
    }
 
      const shortUrl=nanoid(6);
      await url.create({originalUrl,shortUrl})
-     res.json({ shortUrl: `http://localhost:2000/${shortUrl}` });
+     res.json({ shortUrl: `https://url-shortner-4r1c.onrender.com/${shortUrl}` });
     }
     catch(err){
         res.status(500).json({error:"Server error"});
