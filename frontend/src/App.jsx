@@ -85,7 +85,7 @@ function App() {
                 rel="noopener noreferrer"
                 className="short-link"
               >
-                {shortUrl}
+                {shortUrl.replace("https://url-shortner-4r1c.onrender.com/", "")}
               </a>
               <button className="copy-btn" onClick={handleCopy} aria-label="Copy short link">
                 {copied ? <Check size={16} /> : <Copy size={16} />}
