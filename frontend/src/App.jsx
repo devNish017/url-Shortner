@@ -1,61 +1,102 @@
 import { useState } from 'react'
 import './App.css'
 import axios from "axios"
+import { Link2, Copy, Check, ArrowRight, Loader2 } from 'lucide-react'
 
 function App() {
-  const [url,setUrl]=useState('');
-  const [shortUrl,setShortUrl]=useState('');
-  const kiss=async()=>{
-    try{
- const res= await  axios.post("http://localhost:2000/shorten",{
-    originalUrl:url
-   })
-   setShortUrl(res.data.shortUrl);
+  const [url, setUrl] = useState('')
+  const [shortUrl, setShortUrl] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState('')
+
+  const shortenUrl = async () => {
+    if (!url.trim()) {
+      setError('Paste a link first')
+      return
     }
-    catch(err){
-      console.log(err);
+    setError('')
+    setLoading(true)
+    setShortUrl('')
+    try {
+      const res = await axios.post("http://localhost:2000/shorten", {
+        originalUrl: url
+      })
+      setShortUrl(res.data.shortUrl)
+    } catch (err) {
+      console.log(err)
+      setError('Could not shorten that link. Try again.')
+    } finally {
+      setLoading(false)
     }
   }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') shortenUrl()
+  }
+
+  const handleCopy = async () => {
+    if (!shortUrl) return
+    await navigator.clipboard.writeText(shortUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
+  }
+
   return (
-    <>
-    <div className="h-screen grid place-items-center bg-slate-600">
-   
-      
-        
-        <div className="flex flex-col gap-4 items-center">
-           <h2 className='text-center font-extrabold text-9xl mb-20 mr-8 text-slate-400'> URL shortner</h2>
-          
-          <div className="flex gap-2">
-            <input 
-              type="text" 
-              className=" h-10 w-80 bg-slate-100 outline-none rounded-xl  px-2" 
-                value={url}
-            onChange={(e)=>setUrl(e.target.value)}
-              placeholder="enter your url here"
-            />
-            <button onClick={kiss}
-          
-             className="bg-white rounded-3xl w-min px-5.5 py-1.5  cursor-pointer">Search</button>
-          </div>
+    <div className="page">
+      <div className="glow" />
 
-          <div>
-           {shortUrl && (
-    <a
-      href={shortUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="-ml-18 mt-3 text-white  rounded-xl w-80 text-center 
-                 cursor-pointer transition-all duration-300 ease-in-out 
-                 hover:scale-150 hover:underline  block"
-    >
-      {shortUrl}
-    </a>)}
-          </div>
-
+      <div className="card">
+        <div className="brand">
+          <span className="brand-icon"><Link2 size={18} strokeWidth={2.4} /></span>
+          <span className="brand-name">snip</span>
         </div>
 
+        <h1 className="title">Make long links short</h1>
+        <p className="subtitle">Paste a URL, get a clean short link back. That's it.</p>
+
+        <div className="input-row">
+          <input
+            type="text"
+            className="url-input"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="https://example.com/your/very/long/link"
+            spellCheck={false}
+          />
+          <button className="shorten-btn" onClick={shortenUrl} disabled={loading}>
+            {loading ? (
+              <Loader2 size={18} className="spin" />
+            ) : (
+              <>Shorten<ArrowRight size={16} /></>
+            )}
+          </button>
+        </div>
+
+        {error && <p className="error-text">{error}</p>}
+
+        <div className={`result ${shortUrl ? 'result-visible' : ''}`}>
+          {shortUrl && (
+            <div className="result-row">
+              <a
+                href={shortUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="short-link"
+              >
+                {shortUrl}
+              </a>
+              <button className="copy-btn" onClick={handleCopy} aria-label="Copy short link">
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </>
+
+      <p className="footnote">Links are shortened locally on your server.</p>
+    </div>
   )
 }
 
